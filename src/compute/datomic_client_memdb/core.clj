@@ -36,8 +36,7 @@
   Closeable
   (close [client]
     (doseq [db (client/list-databases client {})]
-      (client/delete-database client {:db-name db}))
-    nil))
+      (client/delete-database client {:db-name db}))))
 
 (extend-type LocalConnection
   client/Connection
