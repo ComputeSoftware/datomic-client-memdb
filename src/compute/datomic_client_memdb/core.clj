@@ -7,11 +7,13 @@
            (datomic.db Db)
            (java.io Closeable)))
 
+(defonce clients (atom {}))
+
 (defn- memdb-uri
   [db-name]
   (str "datomic:mem://" db-name))
 
-(defrecord Client [db-lookup]
+(defrecord Client [db-lookup client-arg-map]
   client/Client
   (list-databases [_ _]
     (or (keys @db-lookup) '()))
@@ -35,7 +37,9 @@
   Closeable
   (close [client]
     (doseq [db (client/list-databases client {})]
-      (client/delete-database client {:db-name db}))))
+      (client/delete-database client {:db-name db}))
+    (swap! clients dissoc client-arg-map)
+    nil))
 
 (extend-type LocalConnection
   client/Connection
@@ -65,9 +69,9 @@
     (peer/index-range db (:attrid arg-map) (:start arg-map) (:end arg-map)))
   (pull
     ([db arg-map]
-      (client/pull db (:selector arg-map) (:eid arg-map)))
+     (client/pull db (:selector arg-map) (:eid arg-map)))
     ([db selector eid]
-      (peer/pull db selector eid)))
+     (peer/pull db selector eid)))
   (since [db t]
     (peer/since db t))
   (with [db arg-map]
@@ -83,4 +87,9 @@
 
 (defn client
   [arg-map]
-  (map->Client {:db-lookup (atom {})}))
+  (if-let [c (get @clients arg-map)]
+    c
+    (let [new-client (map->Client {:db-lookup      (atom {})
+                                   :client-arg-map arg-map})]
+      (swap! clients assoc arg-map new-client)
+      new-client)))
