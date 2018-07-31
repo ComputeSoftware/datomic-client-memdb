@@ -2,7 +2,6 @@
   (:require
     [datomic.client.api :as client]
     [datomic.client.api.impl :as client-impl]
-    [datomic.client.api.sync]
     [datomic.api :as peer])
   (:import (datomic.peer LocalConnection)
            (datomic.db Db)
