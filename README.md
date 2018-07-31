@@ -1,4 +1,4 @@
-# datomic-client-cloud
+# datomic-client-memdb
 
 FIXME: description
 
