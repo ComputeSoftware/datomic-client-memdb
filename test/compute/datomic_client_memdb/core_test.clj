@@ -39,7 +39,9 @@
       (is (= #{:t :data}
              (-> conn (d/tx-range {}) (first) (keys) (set)))))
     (testing "with-db is a db"
-      (is (satisfies? d/Db (d/with-db conn))))))
+      (is (satisfies? d/Db (d/with-db conn))))
+    (testing "conn info works"
+      (is (every? some? (map #(get conn %) [:t :next-t :db-name]))))))
 
 (deftest db-test
   (d/create-database *client* {:db-name "test"})
@@ -53,4 +55,6 @@
       (is (= #{[bob-id]}
              (d/q '[:find ?e
                     :where
-                    [?e :user/name "bob"]] db))))))
+                    [?e :user/name "bob"]] db))))
+    (testing "db info works"
+      (is (every? some? (map #(get db % ) [:t :next-t :db-name]))))))

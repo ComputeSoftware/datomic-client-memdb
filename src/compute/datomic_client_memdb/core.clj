@@ -3,15 +3,74 @@
     [datomic.client.api :as client]
     [datomic.client.api.impl :as client-impl]
     [datomic.api :as peer])
-  (:import (datomic.peer LocalConnection)
-           (datomic.db Db)
-           (java.io Closeable)))
+  (:import (java.io Closeable)))
 
 (defonce clients (atom {}))
+
+(defn- throw-unsupported
+  [data]
+  (throw (ex-info "Unsupported operation." data)))
 
 (defn- memdb-uri
   [db-name]
   (str "datomic:mem://" db-name))
+
+(deftype LocalDb [db db-name]
+  client/Db
+  (as-of [_ time-point]
+    (peer/as-of db time-point))
+  (datoms [_ arg-map]
+    (apply peer/datoms db (:index arg-map) (:components arg-map)))
+  (db-stats [_]
+    (throw-unsupported {}))
+  (history [_]
+    (peer/history db))
+  (index-range [_ arg-map]
+    (peer/index-range _ (:attrid arg-map) (:start arg-map) (:end arg-map)))
+  (pull [_ arg-map]
+    (client/pull db (:selector arg-map) (:eid arg-map)))
+  (pull [_ selector eid]
+    (peer/pull db selector eid))
+  (since [_ t]
+    (peer/since db t))
+  (with [_ arg-map]
+    (peer/with db (:tx-data arg-map)))
+
+  client-impl/Queryable
+  (q [_ arg-map]
+    (apply peer/q (:query arg-map) db (:args arg-map)))
+
+  clojure.lang.ILookup
+  (valAt [this k]
+    (.valAt this k nil))
+  (valAt [this k not-found]
+    (case k
+      :t (peer/basis-t db)
+      :next-t (inc (:t this))
+      :db-name db-name
+      not-found)))
+
+
+(deftype LocalConnection [conn db-name]
+  client/Connection
+  (db [_]
+    (LocalDb. (peer/db conn) db-name))
+
+  (transact [_ arg-map]
+    @(peer/transact conn (:tx-data arg-map)))
+
+  (tx-range [_ arg-map]
+    (peer/tx-range (peer/log conn) (:start arg-map) (:end arg-map)))
+
+  (with-db [this]
+    (client/db this))
+
+  clojure.lang.ILookup
+  (valAt [this k]
+    (.valAt this k nil))
+  (valAt [this k not-found]
+    (get (client/db this) k not-found)))
+
 
 (defrecord Client [db-lookup client-arg-map]
   client/Client
@@ -20,7 +79,7 @@
 
   (connect [_ arg-map]
     (if-let [db-uri (get @db-lookup (:db-name arg-map))]
-      (peer/connect db-uri)
+      (LocalConnection. (peer/connect db-uri) (:db-name arg-map))
       (throw (ex-info "Unable to find db." {:db-name (:db-name arg-map)}))))
 
   (create-database [_ arg-map]
@@ -41,45 +100,6 @@
     (swap! clients dissoc client-arg-map)
     nil))
 
-(extend-type LocalConnection
-  client/Connection
-  (db [conn]
-    (peer/db conn))
-
-  (transact [conn arg-map]
-    @(peer/transact conn (:tx-data arg-map)))
-
-  (tx-range [conn arg-map]
-    (peer/tx-range (peer/log conn) (:start arg-map) (:end arg-map)))
-
-  (with-db [conn]
-    (peer/db conn)))
-
-(extend-type Db
-  client/Db
-  (as-of [db time-point]
-    (peer/as-of db time-point))
-  (datoms [db arg-map]
-    (apply peer/datoms db (:index arg-map) (:components arg-map)))
-  (db-stats [db]
-    (throw (ex-info "Unsupported operation." {})))
-  (history [db]
-    (peer/history db))
-  (index-range [db arg-map]
-    (peer/index-range db (:attrid arg-map) (:start arg-map) (:end arg-map)))
-  (pull
-    ([db arg-map]
-     (client/pull db (:selector arg-map) (:eid arg-map)))
-    ([db selector eid]
-     (peer/pull db selector eid)))
-  (since [db t]
-    (peer/since db t))
-  (with [db arg-map]
-    (peer/with db (:tx-data arg-map)))
-
-  client-impl/Queryable
-  (q [db arg-map]
-    (apply peer/q (:query arg-map) db (:args arg-map))))
 
 (defn close
   [client]
