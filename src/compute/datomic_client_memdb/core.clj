@@ -27,8 +27,8 @@
     (peer/history db))
   (index-range [_ arg-map]
     (peer/index-range _ (:attrid arg-map) (:start arg-map) (:end arg-map)))
-  (pull [_ arg-map]
-    (client/pull db (:selector arg-map) (:eid arg-map)))
+  (pull [this arg-map]
+    (client/pull this (:selector arg-map) (:eid arg-map)))
   (pull [_ selector eid]
     (peer/pull db selector eid))
   (since [_ t]
