@@ -57,4 +57,7 @@
                     :where
                     [?e :user/name "bob"]] db))))
     (testing "db info works"
-      (is (every? some? (map #(get db % ) [:t :next-t :db-name]))))))
+      (is (every? some? (map #(get db %) [:t :next-t :db-name])))
+      (is (:t (last (d/tx-range conn {})))
+          (:t conn)))))
+
