@@ -18,13 +18,13 @@
 (deftype LocalDb [db db-name]
   client/Db
   (as-of [_ time-point]
-    (peer/as-of db time-point))
+    (LocalDb. (peer/as-of db time-point) db-name))
   (datoms [_ arg-map]
     (apply peer/datoms db (:index arg-map) (:components arg-map)))
   (db-stats [_]
     (throw-unsupported {}))
   (history [_]
-    (peer/history db))
+    (LocalDb. (peer/history db) db-name))
   (index-range [_ arg-map]
     (peer/index-range _ (:attrid arg-map) (:start arg-map) (:end arg-map)))
   (pull [this arg-map]
@@ -32,9 +32,9 @@
   (pull [_ selector eid]
     (peer/pull db selector eid))
   (since [_ t]
-    (peer/since db t))
+    (LocalDb. (peer/since db t) db-name))
   (with [_ arg-map]
-    (peer/with db (:tx-data arg-map)))
+    (LocalDb. (peer/with db (:tx-data arg-map)) db-name))
 
   client-impl/Queryable
   (q [_ arg-map]
