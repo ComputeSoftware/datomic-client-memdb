@@ -3,4 +3,7 @@
 
            com.datomic/client       {:mvn/version "0.8.59"}
            com.datomic/datomic-free {:mvn/version "0.9.5697"}}
- :aliases {:test {:extra-paths ["test"]}}}
+ :aliases {:test      {:extra-paths ["test"]}
+           :run-tests {:extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
+                                                               :sha     "028a6d41ac9ac5d5c405dfc38e4da6b4cc1255d5"}}
+                       :main-opts  ["-m" "cognitect.test-runner"]}}}

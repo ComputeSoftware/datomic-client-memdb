@@ -1,0 +1,33 @@
+version: 2
+
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+  - image: circleci/clojure:tools-deps-1.9.0.381
+
+jobs:
+  test:
+    <<: *defaults
+
+    steps:
+    - checkout
+
+    - restore_cache:
+        keys:
+        - project-{{ checksum "deps.edn" }}
+        - project
+
+    - run: clojure -A:test:run-tests
+
+    - save_cache:
+        paths:
+        - ~/.m2
+        - ~/.gitlibs
+        - ./.cpcache
+        key: project-{{ checksum "deps.edn" }}
+
+workflows:
+  version: 2
+  ci-workflow:
+    jobs:
+    - test
