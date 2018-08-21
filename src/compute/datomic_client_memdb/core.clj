@@ -7,6 +7,9 @@
 
 (defonce clients (atom {}))
 
+(defn update-vals [m ks f]
+  (reduce #(update-in % [%2] f) m ks))
+
 (defn- throw-unsupported
   [data]
   (throw (ex-info "Unsupported operation." data)))
@@ -57,7 +60,8 @@
     (LocalDb. (peer/db conn) db-name))
 
   (transact [_ arg-map]
-    @(peer/transact conn (:tx-data arg-map)))
+    (-> @(peer/transact conn (:tx-data arg-map))
+        (update-vals #{:db-before :db-after} #(LocalDb. % db-name))))
 
   (tx-range [_ arg-map]
     (peer/tx-range (peer/log conn) (:start arg-map) (:end arg-map)))
