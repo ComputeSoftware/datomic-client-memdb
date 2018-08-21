@@ -1,5 +1,7 @@
 # datomic-client-memdb
 
+[![CircleCI](https://circleci.com/gh/ComputeSoftware/datomic-client-memdb.svg?style=svg)](https://circleci.com/gh/ComputeSoftware/datomic-client-memdb)
+
 An implementation of the Datomic Client protocols for Datomic peer in-memory database.
 
 ## Installation
