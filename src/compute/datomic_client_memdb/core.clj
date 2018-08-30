@@ -38,7 +38,11 @@
 
   client-impl/Queryable
   (q [_ arg-map]
-    (apply peer/q (:query arg-map) db (:args arg-map)))
+    (apply peer/q (:query arg-map) (map (fn [x]
+                                          (if (instance? LocalDb x)
+                                            (.-db x)
+                                            x))
+                                        (:args arg-map))))
 
   clojure.lang.ILookup
   (valAt [this k]
