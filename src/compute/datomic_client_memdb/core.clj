@@ -91,10 +91,11 @@
       (throw (ex-info "Unable to find db." {:db-name (:db-name arg-map)}))))
 
   (create-database [_ arg-map]
-    (let [db-name (:db-name arg-map)
-          db-uri (memdb-uri (java.util.UUID/randomUUID))]
-      (peer/create-database db-uri)
-      (swap! db-lookup assoc db-name db-uri))
+    (let [db-name (:db-name arg-map)]
+      (when-not (get @db-lookup db-name)
+        (let [db-uri (memdb-uri (java.util.UUID/randomUUID))]
+          (peer/create-database db-uri)
+          (swap! db-lookup assoc db-name db-uri))))
     true)
 
   (delete-database [_ arg-map]
