@@ -15,8 +15,8 @@
   (throw (ex-info "Unsupported operation." data)))
 
 (defn- memdb-uri
-  [db-name]
-  (str "datomic:mem://" db-name))
+  [prefix db-name]
+  (str prefix db-name))
 
 (deftype LocalDb [db db-name]
   client/Db
@@ -80,26 +80,28 @@
     (get (client/db this) k not-found)))
 
 
-(defrecord Client [db-lookup client-arg-map]
+(defrecord Client [prefix client-arg-map]
   client/Client
   (list-databases [_ _]
-    (or (keys @db-lookup) '()))
+    (or (peer/get-database-names (str prefix "*")) '()))
 
-  (connect [_ arg-map]
-    (if-let [db-uri (get @db-lookup (:db-name arg-map))]
-      (LocalConnection. (peer/connect db-uri) (:db-name arg-map))
-      (throw (ex-info "Unable to find db." {:db-name (:db-name arg-map)}))))
+  (connect [this arg-map]
+    (let [db-name (:db-name arg-map)]
+      (if ((set (client/list-databases this {}))  db-name)
+        (let [db-uri (memdb-uri prefix db-name)]
+          (LocalConnection. (peer/connect db-uri) (:db-name arg-map)))
+        (throw (ex-info "Unable to find db." {:db-name db-name})))))
+
 
   (create-database [_ arg-map]
     (let [db-name (:db-name arg-map)
-          db-uri (memdb-uri (java.util.UUID/randomUUID))]
-      (peer/create-database db-uri)
-      (swap! db-lookup assoc db-name db-uri))
-    true)
+          db-uri (memdb-uri prefix db-name)]
+      (peer/create-database db-uri)))
 
   (delete-database [_ arg-map]
-    (swap! db-lookup dissoc (:db-name arg-map))
-    true)
+    (let [db-name (:db-name arg-map)
+          db-uri (memdb-uri prefix db-name)]
+      (peer/delete-database db-uri)))
 
   Closeable
   (close [client]
@@ -117,7 +119,8 @@
   [arg-map]
   (if-let [c (get @clients arg-map)]
     c
-    (let [new-client (map->Client {:db-lookup      (atom {})
+    (let [new-client (map->Client {:prefix (or (:prefix arg-map) "datomic:mem://")
+                                   :db-lookup      (atom {})
                                    :client-arg-map arg-map})]
       (swap! clients assoc arg-map new-client)
       new-client)))

@@ -9,7 +9,7 @@
 
 (defn client-fixture
   [f]
-  (with-open [c (memdb/client {})]
+  (with-open [c (memdb/client {} #_{:prefix "datomic:free://localhost:4334/"})]
     (binding [*client* c]
       (f))))
 
