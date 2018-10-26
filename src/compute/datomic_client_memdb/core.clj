@@ -120,7 +120,6 @@
   (if-let [c (get @clients arg-map)]
     c
     (let [new-client (map->Client {:prefix (or (:prefix arg-map) "datomic:mem://")
-                                   :db-lookup      (atom {})
                                    :client-arg-map arg-map})]
       (swap! clients assoc arg-map new-client)
       new-client)))
