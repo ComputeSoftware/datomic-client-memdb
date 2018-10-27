@@ -17,10 +17,6 @@
 
 (deftest client-test
   (is (d/create-database *client* {:db-name "test"}))
-  (testing "calling create-database twice does not create a new db"
-    (let [db-lookup @(:db-lookup *client*)]
-      (d/create-database *client* {:db-name "test"})
-      (is (= db-lookup @(:db-lookup *client*)))))
   (is (= (list "test") (d/list-databases *client* {})))
   (is (satisfies? d/Connection (d/connect *client* {:db-name "test"})))
   (is (d/delete-database *client* {:db-name "test"}))
