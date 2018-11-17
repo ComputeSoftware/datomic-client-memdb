@@ -29,7 +29,7 @@
   (history [_]
     (LocalDb. (peer/history db) db-name))
   (index-range [_ arg-map]
-    (peer/index-range _ (:attrid arg-map) (:start arg-map) (:end arg-map)))
+    (peer/index-range db (:attrid arg-map) (:start arg-map) (:end arg-map)))
   (pull [this arg-map]
     (client/pull this (:selector arg-map) (:eid arg-map)))
   (pull [_ selector eid]
