@@ -29,7 +29,8 @@
 
 (def test-schema [{:db/ident       :user/name
                    :db/valueType   :db.type/string
-                   :db/cardinality :db.cardinality/one}])
+                   :db/cardinality :db.cardinality/one
+                   :db/index       true}])
 
 (deftest connection-test
   (d/create-database *client* {:db-name "test"})
@@ -63,5 +64,8 @@
     (testing "db info works"
       (is (every? some? (map #(get db %) [:t :next-t :db-name])))
       (is (:t (last (d/tx-range conn {})))
-          (:t conn)))))
+          (:t conn)))
+    (testing "index-range works"
+      (let [[_ _ value] (first (d/index-range db {:attrid [:db/ident :user/name]}))]
+        (is (= value "bob"))))))
 
