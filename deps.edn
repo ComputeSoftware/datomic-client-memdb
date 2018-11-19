@@ -1,7 +1,7 @@
 {:deps    {org.clojure/clojure      {:mvn/version "1.9.0"}
            org.clojure/spec.alpha   {:mvn/version "0.1.143"}
 
-           com.datomic/client       {:mvn/version "0.8.59"}
+           com.datomic/client       {:mvn/version "0.8.66"}
            com.datomic/datomic-free {:mvn/version "0.9.5697"}}
  :aliases {:test      {:extra-paths ["test"]}
            :run-tests {:extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"

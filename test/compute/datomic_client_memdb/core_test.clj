@@ -2,6 +2,7 @@
   (:require
     [clojure.test :refer :all]
     [datomic.client.api :as d]
+    [datomic.client.api.protocols :as client-proto]
     [compute.datomic-client-memdb.core :as memdb])
   (:import (clojure.lang ExceptionInfo)))
 
@@ -22,7 +23,7 @@
       (d/create-database *client* {:db-name "test"})
       (is (= db-lookup @(:db-lookup *client*)))))
   (is (= (list "test") (d/list-databases *client* {})))
-  (is (satisfies? d/Connection (d/connect *client* {:db-name "test"})))
+  (is (satisfies? client-proto/Connection (d/connect *client* {:db-name "test"})))
   (is (d/delete-database *client* {:db-name "test"}))
   (is (= (list) (d/list-databases *client* {})))
   (is (thrown? ExceptionInfo (d/connect *client* {:db-name "test"}))))
@@ -36,7 +37,7 @@
   (d/create-database *client* {:db-name "test"})
   (let [conn (d/connect *client* {:db-name "test"})]
     (testing "db is a db"
-      (is (satisfies? d/Db (d/db conn))))
+      (is (satisfies? client-proto/Db (d/db conn))))
     (testing "transaction returns tx-report"
       (is (= #{:db-before :db-after :tx-data :tempids}
              (set (keys (d/transact conn {:tx-data test-schema}))))))
@@ -44,7 +45,7 @@
       (is (= #{:t :data}
              (-> conn (d/tx-range {}) (first) (keys) (set)))))
     (testing "with-db is a db"
-      (is (satisfies? d/Db (d/with-db conn))))
+      (is (satisfies? client-proto/Db (d/with-db conn))))
     (testing "conn info works"
       (is (every? some? (map #(get conn %) [:t :next-t :db-name]))))))
 
