@@ -100,6 +100,8 @@
     true)
 
   (delete-database [_ arg-map]
+    (when-let [db-uri (get @db-lookup (:db-name arg-map))]
+      (peer/delete-database db-uri))
     (swap! db-lookup dissoc (:db-name arg-map))
     true)
 
