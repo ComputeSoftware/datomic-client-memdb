@@ -6,18 +6,22 @@
     [datomic.api :as peer])
   (:import (java.io Closeable)))
 
-(defonce clients (atom {}))
-
-(defn update-vals [m ks f]
+(defn- update-vals [m ks f]
   (reduce #(update-in % [%2] f) m ks))
 
 (defn- throw-unsupported
   [data]
   (throw (ex-info "Unsupported operation." data)))
 
-(defn- memdb-uri
+(defn memdb-uri
+  "Returns a Datomic mem database URI for `db-name`."
   [db-name]
   (str "datomic:mem://" db-name))
+
+(defn free-uri
+  "Returns the default Datomic free database URI for `db-name`."
+  [db-name]
+  (str "datomic:free://localhost:4334/" db-name))
 
 (deftype LocalDb [db db-name]
   client-proto/Db
@@ -81,47 +85,41 @@
     (get (client/db this) k not-found)))
 
 
-(defrecord Client [db-lookup client-arg-map]
+(defrecord Client [db-name-as-uri-fn]
   client-proto/Client
   (list-databases [_ _]
-    (or (keys @db-lookup) '()))
+    (or (peer/get-database-names (db-name-as-uri-fn "*")) (list)))
 
-  (connect [_ arg-map]
-    (if-let [db-uri (get @db-lookup (:db-name arg-map))]
-      (LocalConnection. (peer/connect db-uri) (:db-name arg-map))
-      (throw (ex-info "Unable to find db." {:db-name (:db-name arg-map)}))))
+  (connect [client arg-map]
+    (let [db-name (:db-name arg-map)]
+      (if (contains? (set (client/list-databases client {})) db-name)
+        (LocalConnection. (peer/connect (db-name-as-uri-fn db-name)) db-name)
+        (throw (ex-info "Unable to find db." {:db-name db-name})))))
 
   (create-database [_ arg-map]
     (let [db-name (:db-name arg-map)]
-      (when-not (get @db-lookup db-name)
-        (let [db-uri (memdb-uri (java.util.UUID/randomUUID))]
-          (peer/create-database db-uri)
-          (swap! db-lookup assoc db-name db-uri))))
+      (peer/create-database (db-name-as-uri-fn db-name)))
     true)
 
   (delete-database [_ arg-map]
-    (when-let [db-uri (get @db-lookup (:db-name arg-map))]
-      (peer/delete-database db-uri))
-    (swap! db-lookup dissoc (:db-name arg-map))
+    (peer/delete-database (db-name-as-uri-fn (:db-name arg-map)))
     true)
 
   Closeable
   (close [client]
     (doseq [db (client/list-databases client {})]
       (client/delete-database client {:db-name db}))
-    (swap! clients dissoc client-arg-map)
     nil))
 
-
 (defn close
+  "Cleans up the Datomic Peer Client by deleting all databases."
   [client]
   (.close client))
 
 (defn client
+  "Returns a Client record that implements the Datomic Client API Protocol. Optionally
+  takes :db-name-as-uri-fn which is a function that is passed a db-name and is
+  expected to return a Datomic Peer database URI. Note that this function is passed
+  a '*' when list-databases is called."
   [arg-map]
-  (if-let [c (get @clients arg-map)]
-    c
-    (let [new-client (map->Client {:db-lookup      (atom {})
-                                   :client-arg-map arg-map})]
-      (swap! clients assoc arg-map new-client)
-      new-client)))
+  (map->Client {:db-name-as-uri-fn (or (:db-name-as-uri-fn arg-map) memdb-uri)}))
