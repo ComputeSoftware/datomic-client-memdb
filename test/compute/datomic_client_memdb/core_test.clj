@@ -18,15 +18,18 @@
 
 (deftest client-test
   (is (d/create-database *client* {:db-name "test"}))
-  (testing "calling create-database twice does not create a new db"
-    (let [db-lookup @(:db-lookup *client*)]
-      (d/create-database *client* {:db-name "test"})
-      (is (= db-lookup @(:db-lookup *client*)))))
   (is (= (list "test") (d/list-databases *client* {})))
   (is (satisfies? client-proto/Connection (d/connect *client* {:db-name "test"})))
   (is (d/delete-database *client* {:db-name "test"}))
   (is (= (list) (d/list-databases *client* {})))
-  (is (thrown? ExceptionInfo (d/connect *client* {:db-name "test"}))))
+  (is (thrown? ExceptionInfo (d/connect *client* {:db-name "test"})))
+  (let [client2 (memdb/client {:db-name-as-uri-fn (fn [db-name]
+                                                    (str (memdb/memdb-uri db-name)
+                                                         ;; a * is passed as the db-name when list-databases is used
+                                                         (when (not= db-name "*") "1")))})]
+    (is (d/create-database client2 {:db-name "foo"}))
+    (is (= (list "foo1") (d/list-databases client2 {}))
+        "ensure that our custom db-name-as-uri-fn function is called")))
 
 (def test-schema [{:db/ident       :user/name
                    :db/valueType   :db.type/string
