@@ -94,7 +94,7 @@
     (let [db-name (:db-name arg-map)]
       (if (contains? (set (client/list-databases client {})) db-name)
         (LocalConnection. (peer/connect (db-name-as-uri-fn db-name)) db-name)
-        (let [msg "Unable to find keyfile.. Make sure that your endpoint and db-name are correct."]
+        (let [msg (format "Unable to find keyfile %s. Make sure that your endpoint and db-name are correct." db-name)]
           (throw (ex-info msg {:cognitect.anomalies/category :cognitect.anomalies/not-found
                                :cognitect.anomalies/message  msg}))))))
 
