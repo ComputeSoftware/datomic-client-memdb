@@ -69,6 +69,12 @@
       (is (every? some? (map #(get db %) [:t :next-t :db-name])))
       (is (:t (last (d/tx-range conn {})))
           (:t conn)))
+    (testing "db with works"
+      (let [tx-report (d/with db {:tx-data [{:user/name "bob5"}]})]
+        (is (:db-before tx-report))
+        (is (:db-after tx-report))
+        (is (:tempids tx-report))
+        (is (:tx-data tx-report))))
     (testing "index-range works"
       (let [[_ _ value] (first (d/index-range db {:attrid [:db/ident :user/name]}))]
         (is (= value "bob"))))))
