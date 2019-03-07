@@ -42,7 +42,9 @@
   (since [_ t]
     (LocalDb. (peer/since db t) db-name))
   (with [_ arg-map]
-    (LocalDb. (peer/with db (:tx-data arg-map)) db-name))
+    (-> (peer/with db (:tx-data arg-map))
+        (update :db-before #(LocalDb. % db-name))
+        (update :db-after #(LocalDb. % db-name))))
 
   client-impl/Queryable
   (q [_ arg-map]
