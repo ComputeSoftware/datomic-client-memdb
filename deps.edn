@@ -1,7 +1,10 @@
 {:deps    {com.datomic/client       {:mvn/version "0.8.89"}
            com.datomic/datomic-free {:mvn/version "0.9.5697"}}
- :paths ["src"]
+ :paths   ["src"]
  :aliases {:test      {:extra-paths ["test"]}
            :run-tests {:extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
                                                                :sha     "f7ef16dc3b8332b0d77bc0274578ad5270fbfedd"}}
-                       :main-opts  ["-m" "cognitect.test-runner"]}}}
+                       :main-opts  ["-m" "cognitect.test-runner"]}
+           :jar       {:extra-deps {pack/pack.alpha {:git/url "https://github.com/juxt/pack.alpha.git"
+                                                     :sha     "60cdf0e75efc988b893eafe726ccdf0d5a5a6067"}}
+                       :main-opts  ["-m" "mach.pack.alpha.skinny" "--no-libs" "-e" "extra" "--project-path" "datomic-client-memdb.jar"]}}}
