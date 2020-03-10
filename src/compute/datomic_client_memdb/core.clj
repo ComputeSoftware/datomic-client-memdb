@@ -38,7 +38,11 @@
   (pull [this arg-map]
     (client/pull this (:selector arg-map) (:eid arg-map)))
   (pull [_ selector eid]
-    (peer/pull db selector eid))
+    ;; Datomic free will return nil when pull'ing for a single attribute that does
+    ;; not exist on an entity. Datomic Cloud returns {} in this case. Since there
+    ;; isn't any cases known where Datomic Cloud will return nil for a pull, we
+    ;; simply return an empty map if nil is returned from the Peer API.
+    (or (peer/pull db selector eid) {}))
   (since [_ t]
     (LocalDb. (peer/since db t) db-name))
   (with [_ arg-map]
