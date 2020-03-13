@@ -19,3 +19,4 @@ project.clj
 out
 .tags
 .cpcache
+extra
