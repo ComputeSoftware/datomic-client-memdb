@@ -70,7 +70,9 @@
              (d/pull db '[:user/name] bob-id)))
       (is (= {}
              (d/pull db '[:user/i-dont-exist] bob-id))
-          "nonexistent attribute results in empty map, not nil"))
+          "nonexistent attribute results in empty map, not nil")
+      (is (thrown? ExceptionInfo (d/pull db [:user/name] nil))
+          "exception thrown when pulling nil eid"))
     (testing "db info works"
       (is (every? some? (map #(get db %) [:t :next-t :db-name])))
       (is (:t (last (d/tx-range conn {})))

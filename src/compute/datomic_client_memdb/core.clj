@@ -42,7 +42,14 @@
     ;; not exist on an entity. Datomic Cloud returns {} in this case. Since there
     ;; isn't any cases known where Datomic Cloud will return nil for a pull, we
     ;; simply return an empty map if nil is returned from the Peer API.
-    (or (peer/pull db selector eid) {}))
+    (if eid
+      (or (peer/pull db selector eid) {})
+      (throw (ex-info "Expected value for :eid"
+                      {:cognitect.anomalies/category                      :cognitect.anomalies/incorrect
+                       :cognitect.anomalies/message                       "Expected value for :eid"
+                       :datomic.client.impl.shared.validator/got          {:selector selector :eid eid}
+                       :datomic.client.impl.shared.validator/op           :pull
+                       :datomic.client.impl.shared.validator/requirements '{:eid value :selector value}}))))
   (since [_ t]
     (LocalDb. (peer/since db t) db-name))
   (with [_ arg-map]
