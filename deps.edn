@@ -1,4 +1,5 @@
-{:deps    {com.datomic/client       {:mvn/version "0.8.89"}
+{:deps    {org.clojure/core.async   {:mvn/version "1.1.587"}
+           com.datomic/client       {:mvn/version "0.8.89"}
            com.datomic/datomic-free {:mvn/version "0.9.5697"}}
  :paths   ["src"]
  :aliases {:test      {:extra-paths ["test"]}
