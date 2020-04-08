@@ -7,7 +7,7 @@ Datomic Client protocols for Datomic Peer databases.
 ## Installation
 
 ```clojure
-datomic-client-memdb {:mvn/version "1.0.1"}
+datomic-client-memdb {:mvn/version "1.0.2"}
 ```
 
 ## Usage

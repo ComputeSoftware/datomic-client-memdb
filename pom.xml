@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>datomic-client-memdb</groupId>
   <artifactId>datomic-client-memdb</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <name>datomic-client-memdb</name>
   <dependencies>
     <dependency>
@@ -20,6 +20,11 @@
       <groupId>com.datomic</groupId>
       <artifactId>client</artifactId>
       <version>0.8.89</version>
+    </dependency>
+    <dependency>
+      <groupId>org.clojure</groupId>
+      <artifactId>core.async</artifactId>
+      <version>1.1.587</version>
     </dependency>
   </dependencies>
   <build>
