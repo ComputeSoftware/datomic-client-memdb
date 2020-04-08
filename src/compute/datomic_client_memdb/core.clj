@@ -11,7 +11,9 @@
 
 (defn- throw-unsupported
   [data]
-  (throw (ex-info "Unsupported operation." data)))
+  (throw (ex-info "Unsupported operation."
+                  (merge {:cognitect.anomalies/category :cognitect.anomalies/unsupported}
+                         data))))
 
 (defn memdb-uri
   "Returns a Datomic mem database URI for `db-name`."
@@ -100,6 +102,7 @@
 
 (defrecord Client [db-name-as-uri-fn]
   client-proto/Client
+  (administer-system [_ arg-map] (throw-unsupported {}))
   (list-databases [_ _]
     (or (peer/get-database-names (db-name-as-uri-fn "*")) (list)))
 
