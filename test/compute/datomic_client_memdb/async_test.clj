@@ -27,7 +27,7 @@
       (ex-info ex-msg anom))))
 
 (defn <t!!
-  ([ch] (<t!! ch 100))
+  ([ch] (<t!! ch 700))
   ([ch timeout-ms]
    (let [[v port] (async/alts!! [ch (async/timeout timeout-ms)])]
      (if (= port ch)
