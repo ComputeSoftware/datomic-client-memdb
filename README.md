@@ -53,12 +53,7 @@ has some particular value set. Perhaps `:local? true` or `:endpoint "localhost"`
 
 ### Caveats
 
-Datomic Cloud's query supports a subset of the functionality of Datomic On-Prem.
-Notably, Datomic Cloud query does not support the Find Spec for collections or
-scalars. Because this API wraps the Datomic Peer, it will return results for queries
-with a collection or scalar Find Spec. 
-
-Datomic Cloud also support transaction functions through Datomic Ions. This library
+Datomic Cloud supports transaction functions through Datomic Ions. This library
 does not have support for Ions.
 
 ### Cleanup

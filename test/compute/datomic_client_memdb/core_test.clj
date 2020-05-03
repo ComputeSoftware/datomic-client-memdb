@@ -65,6 +65,13 @@
              (d/q '[:find ?e
                     :where
                     [?e :user/name "bob"]] db))))
+    (testing "collection queries throw"
+      (is (thrown? ExceptionInfo (d/q '[:find [(pull ?e [*]) ...]
+                                        :where [?e :user/name]]
+                                      db)))
+      (is (thrown? ExceptionInfo (d/q '[:find ?e .
+                                        :where [?e :user/name "bob"]]
+                                      db))))
     (testing "pull works"
       (is (= {:user/name "bob"}
              (d/pull db '[:user/name] bob-id)))

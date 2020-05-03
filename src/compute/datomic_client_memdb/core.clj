@@ -3,6 +3,7 @@
     [datomic.client.api :as client]
     [datomic.client.api.protocols :as client-proto]
     [datomic.client.api.impl :as client-impl]
+    [datomic.query.support :as q-support]
     [datomic.api :as peer])
   (:import (java.io Closeable)))
 
@@ -24,6 +25,14 @@
   "Returns the default Datomic free database URI for `db-name`."
   [db-name]
   (str "datomic:free://localhost:4334/" db-name))
+
+(defn collection-query? [query]
+  (let [[{fnd :find}] (q-support/parse-as query)]
+    (or (and (= 2 (count fnd))
+             (= '. (second fnd)))
+        (and (vector? (first fnd))
+             (= 2 (count (first fnd)))
+             (= '... (second (first fnd)))))))
 
 (deftype LocalDb [db db-name]
   client-proto/Db
@@ -61,11 +70,16 @@
 
   client-impl/Queryable
   (q [_ arg-map]
-    (apply peer/q (:query arg-map) (map (fn [x]
-                                          (if (instance? LocalDb x)
-                                            (.-db x)
-                                            x))
-                                        (:args arg-map))))
+    (let [{:keys [query args]} arg-map]
+      (when (collection-query? query)
+        (throw (ex-info "Only find-rel elements are allowed in client find-spec, see http://docs.datomic.com/query.html#grammar"
+                        {:cognitect.anomalies/category :cognitect.anomalies/incorrect,
+                         :cognitect.anomalies/message  "Only find-rel elements are allowed in client find-spec, see http://docs.datomic.com/query.html#grammar"})))
+      (apply peer/q query (map (fn [x]
+                                 (if (instance? LocalDb x)
+                                   (.-db x)
+                                   x))
+                               args))))
 
   clojure.lang.ILookup
   (valAt [this k]
