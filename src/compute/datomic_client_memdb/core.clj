@@ -74,7 +74,8 @@
       (when (collection-query? query)
         (throw (ex-info "Only find-rel elements are allowed in client find-spec, see http://docs.datomic.com/query.html#grammar"
                         {:cognitect.anomalies/category :cognitect.anomalies/incorrect,
-                         :cognitect.anomalies/message  "Only find-rel elements are allowed in client find-spec, see http://docs.datomic.com/query.html#grammar"})))
+                         :cognitect.anomalies/message  "Only find-rel elements are allowed in client find-spec, see http://docs.datomic.com/query.html#grammar"
+                         :dbs (filterv #(instance? LocalDb %) args)})))
       (apply peer/q query (map (fn [x]
                                  (if (instance? LocalDb x)
                                    (.-db x)
