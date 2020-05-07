@@ -56,6 +56,16 @@ has some particular value set. Perhaps `:local? true` or `:endpoint "localhost"`
 Datomic Cloud supports transaction functions through Datomic Ions. This library
 does not have support for Ions.
 
+This API wraps the Datomic Peer (On-Prem). There are features in Datomic Cloud's
+query that are not present in Datomic On-Prem, and vice versa.
+
+This library does not try to re-implement features from Datomic Cloud,
+but makes some effort to throw exceptions when the user tries to use
+features exclusive to on-prem, notably find spec for collections and scalars.
+
+Because this is not exhaustive, it is recommended to also run integration tests
+against an actual instance of Datomic Cloud.
+
 ### Cleanup
 
 If you would like to cleanup the in-memory DBs, you can use the `close` function:
