@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>datomic-client-memdb</groupId>
   <artifactId>datomic-client-memdb</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
   <name>datomic-client-memdb</name>
   <dependencies>
     <dependency>
