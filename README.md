@@ -1,12 +1,12 @@
+# Library is Deprecated 
+
+The Datomic team released [dev-local](https://docs.datomic.com/cloud/dev-local.html) on July 10, 2020. This library has always been a temporary workaround for offline testing and easy CI support. Dev-local supersedes this library. I recommend switching over to dev-local.
+
 # datomic-client-memdb
 
 [![CircleCI](https://circleci.com/gh/ComputeSoftware/datomic-client-memdb.svg?style=svg)](https://circleci.com/gh/ComputeSoftware/datomic-client-memdb)
 
 Datomic Client protocols for Datomic Peer databases.
-
-# Deprecated 
-
-The Datomic team released [dev-local](https://docs.datomic.com/cloud/dev-local.html) on July 10, 2020. This library has always been a temporary workaround for offline testing and easy CI support. Dev-local supersedes this library. I recommend switching over to dev-local.
 
 ## Installation
 
